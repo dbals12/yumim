@@ -121,7 +121,7 @@ elif menu == "그룹별 분포":
             counts = Counter()
             for val in subset[target_col].dropna():
                 for t in target_values:
-                    if t in str(val):
+                    if isinstance(val, (str, list)) and t in str(val):  # ✅ 안전한 확인
                         counts[t] += 1
             grouped_data[g] = counts
 
