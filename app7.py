@@ -94,8 +94,11 @@ if menu == "컬럼별 분포":
         fig = px.bar(counts, x='응답 수', y='항목', orientation='h', title=f"[{col}] 응답 분포")
     st.plotly_chart(fig, use_container_width=True)
 
-elif menu == "그룹별 분포":
-    group_col = st.selectbox("👥 그룹 기준 선택", df.select_dtypes(include='object').columns)
+if menu == "그룹별 분포":
+    st.markdown("## 👥 그룹별 분포 비교")
+
+    group_candidates = [col for col in df.columns if col not in multi_col_choices]
+    group_col = st.selectbox("👥 그룹 기준 선택", group_candidates)
     target_col = st.selectbox("📌 비교 대상 컬럼 선택", df.columns)
 
     if target_col in multi_col_choices:
