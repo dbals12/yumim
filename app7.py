@@ -134,8 +134,8 @@ elif menu == "그룹별 분포":
                      color_discrete_sequence=px.colors.qualitative.Dark24)
         st.plotly_chart(fig, use_container_width=True)
 
-        elif pd.api.types.is_numeric_dtype(df[target_col]):
-        group_mean = df.groupby(group_col, as_index=False)[target_col].mean()  # ✅ 안전하게 처리
+    elif pd.api.types.is_numeric_dtype(df[target_col]):
+        group_mean = df.groupby(group_col, as_index=False)[target_col].mean()
         fig = px.bar(group_mean, x=group_col, y=target_col, title=f"{group_col}별 {target_col} 평균",
                      color=group_col, color_discrete_sequence=px.colors.qualitative.Dark24)
         st.plotly_chart(fig, use_container_width=True)
