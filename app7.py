@@ -95,53 +95,23 @@ if menu == "컬럼별 분포":
     st.plotly_chart(fig, use_container_width=True)
 
 elif menu == "그룹별 분포":
-    st.markdown("## 👥 그룹별 분포 비교")
-
-    group_col = st.selectbox("👥 그룹 기준 선택", df.columns)
+    group_col = st.selectbox("👥 그룹 기준 선택", df.select_dtypes(include='object').columns)
     target_col = st.selectbox("📌 비교 대상 컬럼 선택", df.columns)
 
-    # 복수응답 여부 확인
-    is_group_multi = group_col in multi_col_choices
-    is_target_multi = target_col in multi_col_choices
-
-    if is_group_multi or is_target_multi:
-        st.warning("복수응답 항목 포함됨: 선택 항목이 여러 개인 응답을 분해하여 집계합니다.")
-
-        # 그룹 기준별로 분해하여 교차 집계
+    if target_col in multi_col_choices:
         grouped_data = {}
-
-        # 가능한 항목 목록
-        group_values = multi_col_choices[group_col] if is_group_multi else df[group_col].dropna().unique()
-        target_values = multi_col_choices[target_col] if is_target_multi else df[target_col].dropna().unique()
-
-        for g in group_values:
-            if is_group_multi:
-                subset = df[df[group_col].apply(lambda x: g in str(x) if pd.notnull(x) else False)]
-            else:
-                subset = df[df[group_col] == g]
-
-            counts = Counter()
-            for val in subset[target_col].dropna():
-                for t in target_values:
-                    if t in str(val):
-                        counts[t] += 1
-            grouped_data[g] = counts
-
+        for g in df[group_col].dropna().unique():
+            subset = df[df[group_col] == g]
+            grouped_data[g] = explode_counts_safe(subset[target_col], multi_col_choices[target_col])
         grouped_df = pd.DataFrame(grouped_data).fillna(0).astype(int)
-
-        # 상위 응답 10개만 보기 좋게 필터링
         top_items = grouped_df.sum(axis=1).sort_values(ascending=False).head(10).index
-        fig = px.bar(grouped_df.loc[top_items].T, barmode='group',
-                     title=f"{group_col}별 [{target_col}] 항목 분포 (복수 응답 포함)",
-                     color_discrete_sequence=px.colors.qualitative.Dark24)
+        fig = px.bar(grouped_df.loc[top_items].T, barmode='group', title=f"{group_col}별 [{target_col}] 항목 분포")
         st.plotly_chart(fig, use_container_width=True)
-
     elif pd.api.types.is_numeric_dtype(df[target_col]):
         group_mean = df.groupby(group_col)[target_col].mean().reset_index()
         fig = px.bar(group_mean, x=group_col, y=target_col, title=f"{group_col}별 {target_col} 평균",
                      color=group_col, color_discrete_sequence=px.colors.qualitative.Dark24)
         st.plotly_chart(fig, use_container_width=True)
-
     else:
         cross = pd.crosstab(df[group_col], df[target_col])
         cross_percent = cross.div(cross.sum(axis=1), axis=0)
