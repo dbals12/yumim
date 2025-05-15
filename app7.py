@@ -14,7 +14,7 @@ from collections import Counter
 import itertools
 from os import path
 
-FONT_PATH = "fonts/NanumGothic.ttf"
+FONT_PATH = "NanumGothic.ttf"
 
 st.set_page_config(layout="wide")
 st.title("📊 MZ세대 설문 데이터 대시보드")
