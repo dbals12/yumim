@@ -426,27 +426,27 @@ elif menu == "텍스트 분석":
                 - 이미지 전환 위한 젊은 감성의 언박싱 콘텐츠 필요
                 """)
 
-            st.markdown("""
-            📌 콘텐츠 방향 예시
-            | 인사이트 유형 | 콘텐츠 전략 예시 |
-            |----------------|------------------|
-            | 부정 키워드 | '왜 효과 없다고 느꼈나요?' -> 실제 후기/리뷰 인터뷰 |
-            | 긍정 키워드 | '간편한 제형 좋아요' -> 젤리스틱형 릴스 콘텐츠 |
-            | 연관 패턴 | '트렌디한 디자인 + 신뢰성' 강조 숏폼 -> 스토리텔링형 리뷰 |
-            """)
-    
-            st.markdown("""
-            🧪 A/B 테스트 콘텐츠 제안
-            - **A안:** "과학으로 입증된 녹용 효과" 전문가 등장형 콘텐츠
-            - **B안:** "20대가 선택한 하루 한 포 루틴템" 사용자 후기 기반 콘텐츠
-            """)
-    
-        if submenu == "전체 키워드 분석":
-            st.header("📚 전체 키워드 기반 분석")
-            run_analysis(df_text, top_n=10)
-    
-        elif submenu == "유형별 키워드 분석":
-            st.header("📚 유형별 키워드 분석")
-            selected_qcat = st.selectbox("질문 카테고리 선택", df_text['질문 카테고리'].dropna().unique())
-            sub_df = df_text[df_text['질문 카테고리'] == selected_qcat]
-            run_analysis(sub_df, top_n=5, qcat=selected_qcat)
+        st.markdown("""
+        📌 콘텐츠 방향 예시
+        | 인사이트 유형 | 콘텐츠 전략 예시 |
+        |----------------|------------------|
+        | 부정 키워드 | '왜 효과 없다고 느꼈나요?' -> 실제 후기/리뷰 인터뷰 |
+        | 긍정 키워드 | '간편한 제형 좋아요' -> 젤리스틱형 릴스 콘텐츠 |
+        | 연관 패턴 | '트렌디한 디자인 + 신뢰성' 강조 숏폼 -> 스토리텔링형 리뷰 |
+        """)
+
+        st.markdown("""
+        🧪 A/B 테스트 콘텐츠 제안
+        - **A안:** "과학으로 입증된 녹용 효과" 전문가 등장형 콘텐츠
+        - **B안:** "20대가 선택한 하루 한 포 루틴템" 사용자 후기 기반 콘텐츠
+        """)
+
+    if submenu == "전체 키워드 분석":
+        st.header("📚 전체 키워드 기반 분석")
+        run_analysis(df_text, top_n=10)
+
+    elif submenu == "유형별 키워드 분석":
+        st.header("📚 유형별 키워드 분석")
+        selected_qcat = st.selectbox("질문 카테고리 선택", df_text['질문 카테고리'].dropna().unique())
+        sub_df = df_text[df_text['질문 카테고리'] == selected_qcat]
+        run_analysis(sub_df, top_n=5, qcat=selected_qcat)
