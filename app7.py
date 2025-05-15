@@ -23,8 +23,8 @@ st.title("📊 MZ세대 설문 데이터 대시보드")
 def load_data():
     df_base = pd.read_csv("df.csv")
     df_cluster = pd.read_excel("cleaned_survey.xlsx")
-    df_text = pd.read_csv("df2.csv", encoding="utf-8")
-    return df_base, df_cluster
+    df_text = pd.read_csv("df2.csv")
+    return df_base, df_cluster, df_text
 
 df, df_cluster, df_text = load_data()
 df.columns = df.columns.str.strip()
