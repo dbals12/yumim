@@ -26,7 +26,7 @@ def load_data():
     df_text = pd.read_csv("df2.csv", encoding="utf-8")
     return df_base, df_cluster
 
-df, df_cluster = load_data()
+df, df_cluster, df_text = load_data()
 df.columns = df.columns.str.strip()
 df_text.columns = df_text.columns.str.strip()
 
