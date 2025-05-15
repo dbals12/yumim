@@ -316,7 +316,7 @@ elif menu == "텍스트 분석":
     def run_analysis(df, top_n=10, qcat=None):
         # 빈도 분석
         freq = df['카테고리'].value_counts().reset_index()
-        freq.columns = ['카테고리', '빈도']
+        freq.columns = ['키워드', '빈도']
         st.subheader(f" TOP {top_n} 키워드 빈도")
 
         col1, col2 = st.columns([1, 1])
