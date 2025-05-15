@@ -14,7 +14,7 @@ from collections import Counter
 import itertools
 from os import path
 
-FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+FONT_PATH = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
 
 st.set_page_config(layout="wide")
 st.title("📊 MZ세대 설문 데이터 대시보드")
@@ -317,7 +317,7 @@ elif menu == "텍스트 분석":
         # 빈도 분석
         freq = df['카테고리'].value_counts().reset_index()
         freq.columns = ['카테고리', '빈도']
-        st.subheader(f"📊 TOP {top_n} 키워드 빈도")
+        st.subheader(f" TOP {top_n} 키워드 빈도")
 
         col1, col2 = st.columns([1, 1])
         with col1:
@@ -340,7 +340,7 @@ elif menu == "텍스트 분석":
         """)
 
         # 토픽 분석
-        st.subheader("🧠 자주 등장하는 키워드 조합")
+        st.subheader("자주 등장하는 키워드 조합")
         docs = df.groupby("ID")["카테고리"].apply(list)
         topic_counter = Counter()
         for cats in docs:
@@ -362,7 +362,7 @@ elif menu == "텍스트 분석":
             st.info("충분한 데이터가 없어 조합 분석을 생략합니다.")
 
         # 연관 분석
-        st.subheader("🔗 연관 키워드 분석")
+        st.subheader(" 연관 키워드 분석")
         pair_counter = Counter()
         grouped = df.groupby("ID")["카테고리"].apply(list)
         for keywords in grouped:
@@ -443,7 +443,7 @@ elif menu == "텍스트 분석":
         """)
         
     if submenu == "전체 키워드 분석":
-        st.header("📚 전체 카테고리 기반 분석")
+        st.header("📚 전체 키워드 기반 분석")
         run_analysis(df_text, top_n=10)
 
     elif submenu == "유형별 키워드 분석":
