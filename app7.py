@@ -14,7 +14,7 @@ from collections import Counter
 import itertools
 from os import path
 
-FONT_PATH = "C:/Users/aaa01/AppData/Local/Microsoft/Windows/Fonts/NanumGothic.ttf"
+FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 
 st.set_page_config(layout="wide")
 st.title("📊 MZ세대 설문 데이터 대시보드")
