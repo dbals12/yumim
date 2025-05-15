@@ -450,6 +450,3 @@ elif menu == "텍스트 분석":
             selected_qcat = st.selectbox("질문 카테고리 선택", df_text['질문 카테고리'].dropna().unique())
             sub_df = df_text[df_text['질문 카테고리'] == selected_qcat]
             run_analysis(sub_df, top_n=5, qcat=selected_qcat)
-
-    else:
-        st.warning("👆 텍스트 분석용 CSV 파일을 먼저 업로드해주세요.")
