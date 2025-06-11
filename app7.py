@@ -458,7 +458,7 @@ elif menu == "텍스트 분석":
         run_analysis(sub_df, top_n=5, qcat=selected_qcat)
 
 elif menu == "릴스 콘텐츠 성과 분석":
-    submenu = st.sidebar.radio("📑 릴스 콘텐츠 성과 분석 세부 메뉴", ["KPI 그룹별 비교", "A/B 테스트", "유입 출처별 비교", "상관분석"])
+    submenu = st.sidebar.radio("📑 콘텐츠 성과 분석 세부 메뉴", ["KPI 그룹별 비교", "A/B 테스트", "유입 출처별 비교", "상관분석"])
 
     df2['길이_구간'] = df2['기간(초)'].apply(lambda x: '30초 이하' if x <= 30 else '30초 초과')
     df2['업로드 시각'] = df2['게시 시간'].apply(lambda x: int(re.search(r'\d{1,2}', str(x)).group()) if pd.notna(x) and re.search(r'\d{1,2}', str(x)) else None)
