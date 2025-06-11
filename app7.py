@@ -33,7 +33,7 @@ df, df_cluster, df_text, df2, df_voice = load_data()
 df.columns = df.columns.str.strip()
 df_text.columns = df_text.columns.str.strip()
 df2['저장률'] = (df2['저장'] / df2['조회']) * 100
-kpi_cols = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '저장', '저장률', '공유', '참여율']
+kpi_cols = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '반응_팔로워(%)', '저장', '저장률', '공유', '참여율']
 
 multi_col_choices = {
     '건기식_섭취제품': ['비타민', '유산균', '홍삼', '오메가3', '단백질 파우더', '루테인', '마그네슘', '콜라겐'],
@@ -512,7 +512,7 @@ elif menu == "릴스 콘텐츠 성과 분석":
 
         st.subheader("말투 유형 A/B 테스트 결과")
         df_voice['저장률'] = (df_voice['저장'] / df_voice['조회']) * 100
-        voice_kpis = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '저장', '저장률', '공유', '댓글', '좋아요', '참여율']
+        voice_kpis = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '반응_팔로워(%)', '저장', '저장률', '공유', '댓글', '좋아요', '참여율']
         group_a = df_voice[df_voice['name'].str.contains('반말')]
         group_b = df_voice[df_voice['name'].str.contains('존댓말')]
         ab_summary_voice = pd.DataFrame({
@@ -529,7 +529,7 @@ elif menu == "릴스 콘텐츠 성과 분석":
         st.dataframe(df2.groupby(target)[ref_cols].mean().round(2))
 
     elif submenu == "상관분석":
-        corr_kpi = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '저장', '저장률', '공유', '좋아요', '댓글', '반응_팔로워(%)', '참여율']
+        corr_kpi = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '반응_팔로워(%)', '저장', '저장률', '공유', '좋아요', '댓글', '반응_팔로워(%)', '참여율']
         corr = df2[corr_kpi].corr()
         fig, ax = plt.subplots(figsize=(10, 7))
         sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", ax=ax)
