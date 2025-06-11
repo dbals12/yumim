@@ -458,6 +458,8 @@ elif menu == "텍스트 분석":
         run_analysis(sub_df, top_n=5, qcat=selected_qcat)
 
 elif menu == "릴스 콘텐츠 성과 분석":
+    import seaborn as sns  # ✅ 상단에서 오류 방지용 seaborn import 보장
+
     submenu = st.sidebar.radio("📑 콘텐츠 성과 분석 세부 메뉴", ["KPI 그룹별 비교", "A/B 테스트", "유입 출처별 비교", "상관분석"])
 
     df2['길이_구간'] = df2['기간(초)'].apply(lambda x: '30초 이하' if x <= 30 else '30초 초과')
@@ -483,17 +485,45 @@ elif menu == "릴스 콘텐츠 성과 분석":
         metric = st.selectbox("KPI 지표 선택", kpi_cols)
         grouped = df2.groupby(options[col])[kpi_cols].mean().round(2).reset_index()
 
-        st.dataframe(grouped)
-
         fig = px.bar(grouped.sort_values(by=metric, ascending=False), x=options[col], y=metric,
                      title=f"{col}별 {metric} 평균")
         st.plotly_chart(fig, use_container_width=True)
+
+        # 참고 텍스트
+        if col == "콘텐츠 유형":
+            st.markdown("""
+            📌 콘텐츠 유형 참고:
+            - A: 체험 소개  
+            - B: 맛/제형  
+            - C: 효능  
+            - D: 밈/챌린지
+            """)
+        elif col == "콘텐츠 방식":
+            st.markdown("""
+            📌 콘텐츠 방식 참고:
+            - 1: 리뷰형  
+            - 2: 튜토리얼형  
+            - 3: 정보형  
+            - 4: 예능형  
+            - 5: 브이로그형  
+            - 6: 후킹형
+            """)
+        elif col == "썸네일 유형":
+            st.markdown("""
+            📌 썸네일 유형 참고:
+            - A: 캐릭터 강조형  
+            - B: 문구 강조형  
+            - C: 문구 X + 피사체 집중형  
+            - D: 캐릭터 + 문구 조화형
+            """)
+
+        st.markdown("#### 📊 KPI 평균표")
+        st.dataframe(grouped)
 
     elif submenu == "A/B 테스트":
         st.subheader("A/B 테스트 결과")
         ab_columns = ['다음날 휴일', '톤앤매너', '캐릭터_인물', 'BGM', '릴스 음악', '말투 유형']
         ab_col = st.selectbox("A/B 테스트 항목 선택", ab_columns)
-        metric = st.selectbox("KPI 지표 선택", kpi_cols)
 
         if ab_col == '말투 유형':
             df_voice['저장률'] = (df_voice['저장'] / df_voice['조회']) * 100
@@ -515,19 +545,22 @@ elif menu == "릴스 콘텐츠 성과 분석":
             if len(unique_vals) == 2:
                 group_a = df2[df2[ab_col] == unique_vals[0]]
                 group_b = df2[df2[ab_col] == unique_vals[1]]
-                a = group_a[metric].dropna()
-                b = group_b[metric].dropna()
-                if len(a) > 1 and len(b) > 1:
-                    t_stat, p_val = ttest_ind(a, b, equal_var=False)
-                    ab_results.append({
-                        '분석 변수': ab_col, 'KPI': metric,
-                        'A 그룹': unique_vals[0], 'B 그룹': unique_vals[1],
-                        'A 평균': round(a.mean(), 2), 'B 평균': round(b.mean(), 2),
-                        '차이 (A - B)': round(a.mean() - b.mean(), 2),
-                        'p-value': round(p_val, 4),
-                        '유의미한 차이 여부': "✅" if p_val < 0.05 else "❌"
-                    })
-            st.dataframe(pd.DataFrame(ab_results))
+                for kpi in kpi_cols:
+                    a = group_a[kpi].dropna()
+                    b = group_b[kpi].dropna()
+                    if len(a) > 1 and len(b) > 1:
+                        t_stat, p_val = ttest_ind(a, b, equal_var=False)
+                        ab_results.append({
+                            '분석 변수': ab_col, 'KPI': kpi,
+                            'A 그룹': unique_vals[0], 'B 그룹': unique_vals[1],
+                            'A 평균': round(a.mean(), 2), 'B 평균': round(b.mean(), 2),
+                            '차이 (A - B)': round(a.mean() - b.mean(), 2),
+                            'p-value': round(p_val, 4),
+                            '유의미한 차이 여부': "✅" if p_val < 0.05 else "❌"
+                        })
+            df_result = pd.DataFrame(ab_results)
+            if not df_result.empty:
+                st.dataframe(df_result)
 
     elif submenu == "유입 출처별 비교":
         ref_cols = ['조회 출처_릴스 탭(%)', '조회 출처_탐색 탭(%)', '조회 출처_프로필(%)', '조회 출처_스토리(%)']
@@ -536,8 +569,9 @@ elif menu == "릴스 콘텐츠 성과 분석":
         st.dataframe(df2.groupby(target)[ref_cols].mean().round(2))
 
     elif submenu == "상관분석":
-        import seaborn as sns  # ✅ 누락된 import 추가
-        corr_kpi = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '반응_팔로워(%)', '저장', '저장률', '공유', '좋아요', '댓글', '반응_팔로워(%)', '참여율']
+        from matplotlib import rcParams
+        rcParams['font.family'] = 'NanumGothic'
+        corr_kpi = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '반응_팔로워(%)', '저장', '저장률', '공유', '좋아요', '댓글', '참여율']
         corr = df2[corr_kpi].corr()
         fig, ax = plt.subplots(figsize=(10, 7))
         sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", ax=ax)
