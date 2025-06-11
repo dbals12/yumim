@@ -459,6 +459,8 @@ elif menu == "텍스트 분석":
 
 elif menu == "릴스 콘텐츠 성과 분석":
     import seaborn as sns  # ✅ 상단에서 오류 방지용 seaborn import 보장
+    from matplotlib import rcParams
+    rcParams['font.family'] = 'NanumGothic'  # ✅ 한글 깨짐 방지
 
     submenu = st.sidebar.radio("📑 콘텐츠 성과 분석 세부 메뉴", ["KPI 그룹별 비교", "A/B 테스트", "유입 출처별 비교", "상관분석"])
 
@@ -492,33 +494,18 @@ elif menu == "릴스 콘텐츠 성과 분석":
         # 참고 텍스트
         if col == "콘텐츠 유형":
             st.markdown("""
-            📌 콘텐츠 유형 참고:
-            - A: 체험 소개  
-            - B: 맛/제형  
-            - C: 효능  
-            - D: 밈/챌린지
-            """)
-        elif col == "콘텐츠 방식":
-            st.markdown("""
-            📌 콘텐츠 방식 참고:
-            - 1: 리뷰형  
-            - 2: 튜토리얼형  
-            - 3: 정보형  
-            - 4: 예능형  
-            - 5: 브이로그형  
-            - 6: 후킹형
-            """)
+            <sub>📌 콘텐츠 유형 참고:<br>
+            A - 체험 소개 | B - 맛/제형 | C - 효능 | D - 밈/챌린지<br>
+            1 - 리뷰형 | 2 - 튜토리얼형 | 3 - 정보형 | 4 - 예능형 | 5 - 브이로그형 | 6 - 후킹형</sub>
+            """, unsafe_allow_html=True)
         elif col == "썸네일 유형":
             st.markdown("""
-            📌 썸네일 유형 참고:
-            - A: 캐릭터 강조형  
-            - B: 문구 강조형  
-            - C: 문구 X + 피사체 집중형  
-            - D: 캐릭터 + 문구 조화형
-            """)
+            <sub>📌 썸네일 유형 참고:<br>
+            A - 캐릭터 강조형 | B - 문구 강조형 | C - 문구 X + 피사체 집중형 | D - 캐릭터 + 문구 조화형</sub>
+            """, unsafe_allow_html=True)
 
         st.markdown("#### 📊 KPI 평균표")
-        st.dataframe(grouped)
+        st.dataframe(grouped, hide_index=True)
 
     elif submenu == "A/B 테스트":
         st.subheader("A/B 테스트 결과")
@@ -537,7 +524,7 @@ elif menu == "릴스 콘텐츠 성과 분석":
                 '차이 (A - B)': (group_a[voice_kpis].mean() - group_b[voice_kpis].mean()).round(2).values,
                 '비고': ['*표본이 작아 t-test는 불가']*len(voice_kpis)
             })
-            st.dataframe(ab_summary_voice)
+            st.dataframe(ab_summary_voice, hide_index=True)
 
         else:
             ab_results = []
@@ -560,7 +547,7 @@ elif menu == "릴스 콘텐츠 성과 분석":
                         })
             df_result = pd.DataFrame(ab_results)
             if not df_result.empty:
-                st.dataframe(df_result)
+                st.dataframe(df_result, hide_index=True)
 
     elif submenu == "유입 출처별 비교":
         ref_cols = ['조회 출처_릴스 탭(%)', '조회 출처_탐색 탭(%)', '조회 출처_프로필(%)', '조회 출처_스토리(%)']
@@ -571,10 +558,6 @@ elif menu == "릴스 콘텐츠 성과 분석":
     elif submenu == "상관분석":
         corr_kpi = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '반응_팔로워(%)', '저장', '저장률', '공유', '좋아요', '댓글', '참여율']
         corr = df2[corr_kpi].corr()
-        from matplotlib import font_manager
-        font_path = "NanumGothic.ttf"
-        font_manager.fontManager.addfont(font_path)
-        plt.rcParams['font.family'] = 'NanumGothic'
         fig, ax = plt.subplots(figsize=(10, 7))
         sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", ax=ax)
         st.pyplot(fig)
