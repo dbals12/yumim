@@ -484,19 +484,24 @@ elif menu == "릴스 콘텐츠 성과 분석":
             "릴스 음악 유무": "릴스 음악"
         }
         col = st.selectbox("비교 기준", list(options.keys()))
+        metric = st.selectbox("KPI 지표 선택", kpi_cols)
+        grouped = df2.groupby(options[col])[kpi_cols].mean().round(2).reset_index()
         # 참고 텍스트
         if col == "콘텐츠 유형":
             st.markdown("""
-            A - 체험 소개 | B - 맛/제형 | C - 효능 | D - 밈/챌린지<br>
-            1 - 리뷰형 | 2 - 튜토리얼형 | 3 - 정보형 | 4 - 예능형 | 5 - 브이로그형 | 6 - 후킹형</sub>
+            <div style='font-size: 11px; color: gray;'>
+            *A : 체험 소개 | B : 맛/제형 | C : 효능 | D : 밈/챌린지<br>
+            1 : 리뷰형 | 2 : 튜토리얼형 | 3 : 정보형 | 4 : 예능형 | 5 : 브이로그형 | 6 : 후킹형
+            </div>
             """, unsafe_allow_html=True)
+        
         elif col == "썸네일 유형":
             st.markdown("""
-            A - 캐릭터 강조형 | B - 문구 강조형 | C - 문구 X + 피사체 집중형 | D - 캐릭터 + 문구 조화형</sub>
+            <div style='font-size: 11px; color: gray;'>
+            *A : 캐릭터 강조형 | B : 문구 강조형 | C : 문구 X + 피사체 집중형 | D : 캐릭터 + 문구 조화형
+            </div>
             """, unsafe_allow_html=True)
-        metric = st.selectbox("KPI 지표 선택", kpi_cols)
-        grouped = df2.groupby(options[col])[kpi_cols].mean().round(2).reset_index()
-
+      
         fig = px.bar(grouped.sort_values(by=metric, ascending=False), x=options[col], y=metric,
                      title=f"{col}별 {metric} 평균")
         st.plotly_chart(fig, use_container_width=True)
@@ -553,6 +558,7 @@ elif menu == "릴스 콘텐츠 성과 분석":
         st.dataframe(df2.groupby(target)[ref_cols].mean().round(2))
 
     elif submenu == "상관분석":
+        st.markdown("#### KPI 간 상관분석")
         corr_kpi = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '반응_팔로워(%)', '저장', '저장률', '공유', '좋아요', '댓글', '참여율']
         corr = df2[corr_kpi].corr()
         fig, ax = plt.subplots(figsize=(10, 7))
@@ -561,6 +567,7 @@ elif menu == "릴스 콘텐츠 성과 분석":
 
         st.markdown("---")
 
+        st.markdown("#### 유입 출처와 KPI 간 상관분석")
         source_cols = ['조회 출처_릴스 탭(%)', '조회 출처_탐색 탭(%)', '조회 출처_프로필(%)', '조회 출처_스토리(%)']
         source_kpi = source_cols + corr_kpi
         corr2 = df2[source_kpi].corr()
