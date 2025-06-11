@@ -484,25 +484,22 @@ elif menu == "릴스 콘텐츠 성과 분석":
             "릴스 음악 유무": "릴스 음악"
         }
         col = st.selectbox("비교 기준", list(options.keys()))
+        # 참고 텍스트
+        if col == "콘텐츠 유형":
+            st.markdown("""
+            A - 체험 소개 | B - 맛/제형 | C - 효능 | D - 밈/챌린지<br>
+            1 - 리뷰형 | 2 - 튜토리얼형 | 3 - 정보형 | 4 - 예능형 | 5 - 브이로그형 | 6 - 후킹형</sub>
+            """, unsafe_allow_html=True)
+        elif col == "썸네일 유형":
+            st.markdown("""
+            A - 캐릭터 강조형 | B - 문구 강조형 | C - 문구 X + 피사체 집중형 | D - 캐릭터 + 문구 조화형</sub>
+            """, unsafe_allow_html=True)
         metric = st.selectbox("KPI 지표 선택", kpi_cols)
         grouped = df2.groupby(options[col])[kpi_cols].mean().round(2).reset_index()
 
         fig = px.bar(grouped.sort_values(by=metric, ascending=False), x=options[col], y=metric,
                      title=f"{col}별 {metric} 평균")
         st.plotly_chart(fig, use_container_width=True)
-
-        # 참고 텍스트
-        if col == "콘텐츠 유형":
-            st.markdown("""
-            <sub>📌 콘텐츠 유형 참고:<br>
-            A - 체험 소개 | B - 맛/제형 | C - 효능 | D - 밈/챌린지<br>
-            1 - 리뷰형 | 2 - 튜토리얼형 | 3 - 정보형 | 4 - 예능형 | 5 - 브이로그형 | 6 - 후킹형</sub>
-            """, unsafe_allow_html=True)
-        elif col == "썸네일 유형":
-            st.markdown("""
-            <sub>📌 썸네일 유형 참고:<br>
-            A - 캐릭터 강조형 | B - 문구 강조형 | C - 문구 X + 피사체 집중형 | D - 캐릭터 + 문구 조화형</sub>
-            """, unsafe_allow_html=True)
 
         st.markdown("#### 📊 KPI 평균표")
         st.dataframe(grouped, hide_index=True)
