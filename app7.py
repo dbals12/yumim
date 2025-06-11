@@ -560,7 +560,7 @@ elif menu == "릴스 콘텐츠 성과 분석":
         st.dataframe(df2.groupby(target)[ref_cols].mean().round(2))
 
     elif submenu == "상관분석":
-        st.markdown("#### KPI 간 상관분석")
+        st.markdown("#### ✅ KPI 간 상관분석")
         corr_kpi = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '반응_팔로워(%)', '저장', '저장률', '공유', '좋아요', '댓글', '참여율']
         corr = df2[corr_kpi].corr()
         fig, ax = plt.subplots(figsize=(10, 7))
@@ -569,7 +569,7 @@ elif menu == "릴스 콘텐츠 성과 분석":
 
         st.markdown("---")
 
-        st.markdown("#### 유입 출처와 KPI 간 상관분석")
+        st.markdown("#### ✅ 조회 출처와 KPI 간 상관분석")
         source_cols = ['조회 출처_릴스 탭(%)', '조회 출처_탐색 탭(%)', '조회 출처_프로필(%)', '조회 출처_스토리(%)']
         source_kpi = source_cols + corr_kpi
         corr2 = df2[source_kpi].corr()
