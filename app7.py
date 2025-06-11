@@ -462,6 +462,8 @@ elif menu == "릴스 콘텐츠 성과 분석":
     from matplotlib import rcParams
     rcParams['font.family'] = 'NanumGothic'  # ✅ 한글 깨짐 방지
 
+    st.markdown("<div style='font-size: 11px; color: gray;'>*모든 평균값은 산술평균 기준</div>", unsafe_allow_html=True)
+
     submenu = st.sidebar.radio("📑 콘텐츠 성과 분석 세부 메뉴", ["KPI 그룹별 비교", "A/B 테스트", "유입 출처별 비교", "상관분석"])
 
     df2['길이_구간'] = df2['기간(초)'].apply(lambda x: '30초 이하' if x <= 30 else '30초 초과')
@@ -490,15 +492,15 @@ elif menu == "릴스 콘텐츠 성과 분석":
         if col == "콘텐츠 유형":
             st.markdown("""
             <div style='font-size: 11px; color: gray;'>
-            *A : 체험 소개 | B : 맛/제형 | C : 효능 | D : 밈/챌린지<br>
-            1 : 리뷰형 | 2 : 튜토리얼형 | 3 : 정보형 | 4 : 예능형 | 5 : 브이로그형 | 6 : 후킹형
+            *A : 체험 소개 *B : 맛/제형 *C : 효능 *D : 밈/챌린지<br>
+            *1 : 리뷰형 *2 : 튜토리얼형 *3 : 정보형 *4 : 예능형 *5 : 브이로그형 *6 : 후킹형
             </div>
             """, unsafe_allow_html=True)
         
         elif col == "썸네일 유형":
             st.markdown("""
             <div style='font-size: 11px; color: gray;'>
-            *A : 캐릭터 강조형 | B : 문구 강조형 | C : 문구 X + 피사체 집중형 | D : 캐릭터 + 문구 조화형
+            *A : 캐릭터 강조형 *B : 문구 강조형 *C : 문구X+피사체 집중형 *D : 캐릭터+문구 조화형
             </div>
             """, unsafe_allow_html=True)
       
