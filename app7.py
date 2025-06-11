@@ -7,6 +7,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler, MultiLabelBinarizer
 from sklearn.cluster import KMeans
 import re
+from scipy.stats import ttest_ind
 
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
@@ -24,11 +25,15 @@ def load_data():
     df_base = pd.read_csv("df.csv")
     df_cluster = pd.read_excel("cleaned_survey.xlsx")
     df_text = pd.read_csv("df2.csv")
-    return df_base, df_cluster, df_text
+    df_main = pd.read_excel("릴스_통합.xlsx")
+    df_voice = pd.read_excel("음성.xlsx")
+    return df_base, df_cluster, df_text, df_main, df_voice
 
-df, df_cluster, df_text = load_data()
+df, df_cluster, df_text, df2, df_voice = load_data()
 df.columns = df.columns.str.strip()
 df_text.columns = df_text.columns.str.strip()
+df2['저장률'] = (df2['저장'] / df2['조회']) * 100
+kpi_cols = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '저장', '저장률', '공유', '참여율']
 
 multi_col_choices = {
     '건기식_섭취제품': ['비타민', '유산균', '홍삼', '오메가3', '단백질 파우더', '루테인', '마그네슘', '콜라겐'],
@@ -89,7 +94,7 @@ df_cluster['cluster'] = labels
 
 # ✅ 사이드바 메뉴
 menu = st.sidebar.radio("📁 분석 메뉴", [
-    "컬럼별 분포", "그룹별 분포", "클러스터링", "고객 페르소나", "텍스트 분석", "인사이트 요약"
+    "컬럼별 분포", "그룹별 분포", "클러스터링", "고객 페르소나", "텍스트 분석", "릴스 콘텐츠 성과 분석", "인사이트 요약"
 ])
 
 if menu == "컬럼별 분포":
@@ -451,3 +456,94 @@ elif menu == "텍스트 분석":
         selected_qcat = st.selectbox("질문 카테고리 선택", df_text['질문 카테고리'].dropna().unique())
         sub_df = df_text[df_text['질문 카테고리'] == selected_qcat]
         run_analysis(sub_df, top_n=5, qcat=selected_qcat)
+
+elif menu == "릴스 콘텐츠 성과 분석":
+    submenu = st.sidebar.radio("📑 릴스 콘텐츠 성과 분석 세부 메뉴", ["KPI 그룹별 비교", "A/B 테스트", "말투 A/B 테스트", "유입 출처별 비교", "상관분석"])
+
+    if submenu == "KPI 그룹별 비교":
+        options = {
+            "콘텐츠 유형": "콘텐츠 유형",
+            "콘텐츠 방식": "콘텐츠 방식",
+            "콘텐츠 소재": "콘텐츠 소재",
+            "톤앤매너": "톤앤매너",
+            "캐릭터_인물": "캐릭터_인물",
+            "게시 요일": "게시 요일",
+            "길이 구간": "길이_구간",
+            "시간대 구분": "시간대 구분",
+            "썸네일 유형": "썸네일 유형",
+            "BGM": "BGM",
+            "BGM 경쾌함": "BGM 경쾌함",
+            "릴스 음악": "릴스 음악"
+        }
+    
+        df2['길이_구간'] = df2['기간(초)'].apply(lambda x: '30초 이하' if x <= 30 else '30초 초과')
+        df2['업로드 시각'] = df2['게시 시간'].apply(lambda x: int(re.search(r'\d{1,2}', str(x)).group()) if pd.notna(x) and re.search(r'\d{1,2}', str(x)) else None)
+        df2['시간대 구분'] = df2['업로드 시각'].apply(lambda x: '19시 이후' if x and x >= 19 else '19시 이전')
+    
+        col = st.selectbox("비교 기준", list(options.keys()))
+        metric = st.selectbox("KPI 지표 선택", kpi_cols)
+    
+        grouped = df2.groupby(options[col])[kpi_cols].mean().round(2).reset_index()
+        fig = px.bar(grouped.sort_values(by=metric, ascending=False), x=options[col], y=metric,
+                     title=f"{col}별 {metric} 평균")
+        st.plotly_chart(fig, use_container_width=True)
+    
+    elif submenu == "A/B 테스트":
+        ab_columns = ['다음날 휴일', '톤앤매너', '캐릭터_인물', 'BGM', '릴스 음악']
+        ab_results = []
+        for col in ab_columns:
+            unique_vals = df2[col].dropna().unique()
+            if len(unique_vals) != 2:
+                continue
+            group_a = df2[df2[col] == unique_vals[0]]
+            group_b = df2[df2[col] == unique_vals[1]]
+            for kpi in kpi_cols:
+                a = group_a[kpi].dropna()
+                b = group_b[kpi].dropna()
+                if len(a) > 1 and len(b) > 1:
+                    t_stat, p_val = ttest_ind(a, b, equal_var=False)
+                    ab_results.append({
+                        '분석 변수': col, 'KPI': kpi,
+                        'A 그룹': unique_vals[0], 'B 그룹': unique_vals[1],
+                        'A 평균': round(a.mean(), 2), 'B 평균': round(b.mean(), 2),
+                        '차이 (A - B)': round(a.mean() - b.mean(), 2),
+                        'p-value': round(p_val, 4),
+                        '유의미한 차이 여부': "✅" if p_val < 0.05 else "❌"
+                    })
+        st.dataframe(pd.DataFrame(ab_results))
+    
+    elif submenu == "말투 A/B 테스트":
+        df_voice['저장률'] = (df_voice['저장'] / df_voice['조회']) * 100
+        voice_kpis = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '저장', '저장률', '공유', '댓글', '좋아요', '참여율']
+        group_a = df_voice[df_voice['name'].str.contains('반말')]
+        group_b = df_voice[df_voice['name'].str.contains('존댓말')]
+        ab_summary_voice = pd.DataFrame({
+            'A (반말 ver)': group_a[voice_kpis].mean().round(2),
+            'B (존댓말 ver)': group_b[voice_kpis].mean().round(2),
+            '차이 (A - B)': (group_a[voice_kpis].mean() - group_b[voice_kpis].mean()).round(2)
+        })
+        st.dataframe(ab_summary_voice)
+    
+    elif submenu == "유입 출처별 비교":
+        ref_cols = ['조회 출처_릴스 탭(%)', '조회 출처_탐색 탭(%)', '조회 출처_프로필(%)', '조회 출처_스토리(%)']
+        compare_targets = ['콘텐츠 유형', '콘텐츠 방식', '콘텐츠 소재', '썸네일 유형']
+        target = st.selectbox("비교 기준 선택", compare_targets)
+        st.dataframe(df.groupby(target)[ref_cols].mean().round(2))
+    
+    elif submenu == "상관분":
+        corr_kpi = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '저장', '저장률', '공유', '좋아요', '댓글', '반응_팔로워(%)', '참여율']
+        corr = df2[corr_kpi].corr()
+        fig, ax = plt.subplots(figsize=(10, 7))
+        sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", ax=ax)
+        st.pyplot(fig)
+    
+        st.markdown("---")
+    
+        source_cols = ['조회 출처_릴스 탭(%)', '조회 출처_탐색 탭(%)', '조회 출처_프로필(%)', '조회 출처_스토리(%)']
+        source_kpi = source_cols + corr_kpi
+        corr2 = df2[source_kpi].corr()
+        fig2, ax2 = plt.subplots(figsize=(10, 7))
+        sns.heatmap(corr2, annot=True, cmap='coolwarm', fmt=".2f", ax=ax2)
+        st.pyplot(fig2)
+
+    
