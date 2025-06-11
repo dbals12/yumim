@@ -482,45 +482,52 @@ elif menu == "릴스 콘텐츠 성과 분석":
         col = st.selectbox("비교 기준", list(options.keys()))
         metric = st.selectbox("KPI 지표 선택", kpi_cols)
         grouped = df2.groupby(options[col])[kpi_cols].mean().round(2).reset_index()
+
+        st.dataframe(grouped)
+
         fig = px.bar(grouped.sort_values(by=metric, ascending=False), x=options[col], y=metric,
                      title=f"{col}별 {metric} 평균")
         st.plotly_chart(fig, use_container_width=True)
 
     elif submenu == "A/B 테스트":
-        st.subheader("릴스 콘텐츠 A/B 테스트 결과")
-        ab_columns = ['다음날 휴일', '톤앤매너', '캐릭터_인물', 'BGM', '릴스 음악']
+        st.subheader("A/B 테스트 결과")
+        ab_columns = ['다음날 휴일', '톤앤매너', '캐릭터_인물', 'BGM', '릴스 음악', '말투 유형']
         ab_col = st.selectbox("A/B 테스트 항목 선택", ab_columns)
         metric = st.selectbox("KPI 지표 선택", kpi_cols)
-        ab_results = []
-        unique_vals = df2[ab_col].dropna().unique()
-        if len(unique_vals) == 2:
-            group_a = df2[df2[ab_col] == unique_vals[0]]
-            group_b = df2[df2[ab_col] == unique_vals[1]]
-            a = group_a[metric].dropna()
-            b = group_b[metric].dropna()
-            if len(a) > 1 and len(b) > 1:
-                t_stat, p_val = ttest_ind(a, b, equal_var=False)
-                ab_results.append({
-                    '분석 변수': ab_col, 'KPI': metric,
-                    'A 그룹': unique_vals[0], 'B 그룹': unique_vals[1],
-                    'A 평균': round(a.mean(), 2), 'B 평균': round(b.mean(), 2),
-                    '차이 (A - B)': round(a.mean() - b.mean(), 2),
-                    'p-value': round(p_val, 4),
-                    '유의미한 차이 여부': "✅" if p_val < 0.05 else "❌"
-                })
-        st.dataframe(pd.DataFrame(ab_results))
 
-        st.subheader("말투 유형 A/B 테스트 결과")
-        df_voice['저장률'] = (df_voice['저장'] / df_voice['조회']) * 100
-        voice_kpis = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '반응_팔로워(%)', '저장', '저장률', '공유', '댓글', '좋아요', '참여율']
-        group_a = df_voice[df_voice['name'].str.contains('반말')]
-        group_b = df_voice[df_voice['name'].str.contains('존댓말')]
-        ab_summary_voice = pd.DataFrame({
-            'A (반말 ver)': group_a[voice_kpis].mean().round(2),
-            'B (존댓말 ver)': group_b[voice_kpis].mean().round(2),
-            '차이 (A - B)': (group_a[voice_kpis].mean() - group_b[voice_kpis].mean()).round(2)
-        })
-        st.dataframe(ab_summary_voice)
+        if ab_col == '말투 유형':
+            df_voice['저장률'] = (df_voice['저장'] / df_voice['조회']) * 100
+            voice_kpis = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '반응_팔로워(%)', '저장', '저장률', '공유', '댓글', '좋아요', '참여율']
+            group_a = df_voice[df_voice['name'].str.contains('반말')]
+            group_b = df_voice[df_voice['name'].str.contains('존댓말')]
+            ab_summary_voice = pd.DataFrame({
+                '분석 변수': voice_kpis,
+                'A (반말 ver)': group_a[voice_kpis].mean().round(2).values,
+                'B (존댓말 ver)': group_b[voice_kpis].mean().round(2).values,
+                '차이 (A - B)': (group_a[voice_kpis].mean() - group_b[voice_kpis].mean()).round(2).values,
+                '비고': ['*표본이 작아 t-test는 불가']*len(voice_kpis)
+            })
+            st.dataframe(ab_summary_voice)
+
+        else:
+            ab_results = []
+            unique_vals = df2[ab_col].dropna().unique()
+            if len(unique_vals) == 2:
+                group_a = df2[df2[ab_col] == unique_vals[0]]
+                group_b = df2[df2[ab_col] == unique_vals[1]]
+                a = group_a[metric].dropna()
+                b = group_b[metric].dropna()
+                if len(a) > 1 and len(b) > 1:
+                    t_stat, p_val = ttest_ind(a, b, equal_var=False)
+                    ab_results.append({
+                        '분석 변수': ab_col, 'KPI': metric,
+                        'A 그룹': unique_vals[0], 'B 그룹': unique_vals[1],
+                        'A 평균': round(a.mean(), 2), 'B 평균': round(b.mean(), 2),
+                        '차이 (A - B)': round(a.mean() - b.mean(), 2),
+                        'p-value': round(p_val, 4),
+                        '유의미한 차이 여부': "✅" if p_val < 0.05 else "❌"
+                    })
+            st.dataframe(pd.DataFrame(ab_results))
 
     elif submenu == "유입 출처별 비교":
         ref_cols = ['조회 출처_릴스 탭(%)', '조회 출처_탐색 탭(%)', '조회 출처_프로필(%)', '조회 출처_스토리(%)']
@@ -529,6 +536,7 @@ elif menu == "릴스 콘텐츠 성과 분석":
         st.dataframe(df2.groupby(target)[ref_cols].mean().round(2))
 
     elif submenu == "상관분석":
+        import seaborn as sns  # ✅ 누락된 import 추가
         corr_kpi = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '반응_팔로워(%)', '저장', '저장률', '공유', '좋아요', '댓글', '반응_팔로워(%)', '참여율']
         corr = df2[corr_kpi].corr()
         fig, ax = plt.subplots(figsize=(10, 7))
