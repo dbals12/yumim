@@ -569,10 +569,12 @@ elif menu == "릴스 콘텐츠 성과 분석":
         st.dataframe(df2.groupby(target)[ref_cols].mean().round(2))
 
     elif submenu == "상관분석":
-        from matplotlib import rcParams
-        rcParams['font.family'] = 'NanumGothic'
         corr_kpi = ['조회', '도달', '평균 시청 시간(초)', '첫 3초 이후 조회율(%)', '반응_팔로워(%)', '저장', '저장률', '공유', '좋아요', '댓글', '참여율']
         corr = df2[corr_kpi].corr()
+        from matplotlib import font_manager
+        font_path = "NanumGothic.ttf"
+        font_manager.fontManager.addfont(font_path)
+        plt.rcParams['font.family'] = 'NanumGothic'
         fig, ax = plt.subplots(figsize=(10, 7))
         sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", ax=ax)
         st.pyplot(fig)
